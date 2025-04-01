@@ -1,10 +1,14 @@
 // jest test ffor the hello.route.js
 
-import Fastify from "fastify";
-import build from "./helper.js";
+import { buildApp, closeApp } from './helper.js';
 
 describe("hello route", () => {
-  let app = build(); // build the app
+  let app;
+
+beforeAll(async () => {
+  app = await buildApp();
+});
+ // build the app
 
   test("GET /", async () => {
     const res = await app.inject({

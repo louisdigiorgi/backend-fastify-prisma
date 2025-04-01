@@ -1,7 +1,16 @@
 // jest test for the books.route.js
 
-import Fastify from "fastify";
-import build from "./helper.js";
+import { buildApp, closeApp } from './helper.js';
+
+let app;
+
+beforeAll(async () => {
+  app = await buildApp();
+});
+
+afterAll(async () => {
+  await closeApp(app);
+});
 
 describe("books memory route", () => {
   let app = build(); // build the app

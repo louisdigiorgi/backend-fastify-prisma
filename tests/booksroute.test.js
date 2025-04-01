@@ -1,7 +1,7 @@
 // jest test for the books.route.js
 
 import Fastify from "fastify";
-import build from "./helper.js";
+import { buildApp, closeApp } from './helper.js';
 
 describe("books route", () => {
   let app = build(); // build the app

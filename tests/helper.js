@@ -1,39 +1,25 @@
-// helper functions for jest tests
-
-import Fastify from "fastify";
-import { PrismaClient } from '@prisma/client';
-import prismaPlugin from "../src/plugins/prisma.js";
-import registerApp from "../src/app.js";
 import { execSync } from 'child_process';
+import { randomUUID } from 'crypto';
+import Fastify from 'fastify';
+import appRoot from '../src/app.js'; // adapte ce chemin si besoin
 
-// Create a test database URL
-const TEST_DATABASE_URL = 'file:./test.db';
+export const buildApp = async () => {
+  const dbFileName = `test-${randomUUID()}.db`;
+  const TEST_DATABASE_URL = `file:./${dbFileName}`;
 
-export default build = () => {
-  let app = Fastify();
-
-  beforeAll(async () => {
-    // Set up test database URL
-    process.env.DATABASE_URL = TEST_DATABASE_URL;
-    
-    execSync('npx prisma migrate reset --force --skip-seed', {
-      env: { ...process.env, DATABASE_URL: 'file:./test.db' },
-    });
-
-
-    // Register the Prisma plugin first
-    await app.register(prismaPlugin);
-    
-    // Register the app with the test database
-    await app.register(registerApp);
-    await app.ready();
+  execSync('npx prisma migrate reset --force --skip-seed', {
+    env: { ...process.env, DATABASE_URL: TEST_DATABASE_URL },
+    stdio: 'inherit',
   });
 
-  afterAll(async () => {
-    // Clean up the test database
-    await app.prisma.book.deleteMany();
-    await app.close();
-  });
+  const app = Fastify();
+  app.register(appRoot);
+  app.decorate('testDbUrl', TEST_DATABASE_URL);
 
+  await app.ready();
   return app;
+};
+
+export const closeApp = async (app) => {
+  if (app) await app.close();
 };
